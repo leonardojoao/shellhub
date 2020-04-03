@@ -56,3 +56,13 @@ services:
       - api
       - ssh
       - gateway
+  register-srv:
+    image: eduardoveiga/register-srv:4
+    environment:
+      - MONGO_HOST=mongo
+    ports:
+      - 8081:8081
+    depends_on:
+      - mongo
+    links:
+      - mongo
