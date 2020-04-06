@@ -36,7 +36,7 @@ var verifyKey *rsa.PublicKey
 func main() {
 	e := echo.New()
 	e.Use(middleware.Logger())
-
+	e.Use(middleware.CORS())
 	var cfg config
 	if err := envconfig.Process("api", &cfg); err != nil {
 		panic(err.Error())
