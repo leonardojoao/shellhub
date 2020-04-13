@@ -57,7 +57,7 @@ services:
       - ssh
       - gateway
   register-srv:
-    image: eduardoveiga/register-srv:4
+    image: eduardoveiga/register-srv:test
     environment:
       - MONGO_HOST=mongo
     ports:
