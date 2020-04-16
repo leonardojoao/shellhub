@@ -548,6 +548,60 @@ func (s *Store) GetDeviceByName(ctx context.Context, name string, tenant string)
 	return device, nil
 }
 
+func (s *Store) CreateToken(ctx context.Context, token models.Token) (*models.Token, error) {
+
+	if _, err := s.db.Collection("tokens").InsertOne(ctx, &token); err != nil {
+		return nil, err
+	}
+	return &token, nil
+}
+
+func (s *Store) GetToken(ctx context.Context, id string) (*models.Token, error) {
+	token := new(models.Token)
+	if err := s.db.Collection("tokens").FindOne(ctx, bson.M{"id": id}).Decode(&token); err != nil {
+		return nil, err
+	}
+	return token, nil
+}
+
+func (s *Store) ListTokens(ctx context.Context, perPage int, page int) ([]models.Token, error) {
+	skip := perPage * (page - 1)
+	query := []bson.M{
+		{
+			"$skip": skip,
+		},
+		{
+			"$limit": perPage,
+		},
+	}
+	if tenant := store.TenantFromContext(ctx); tenant != nil {
+		query = append(query, bson.M{
+			"$match": bson.M{
+				"tenant_id": tenant.ID,
+			},
+		})
+
+	}
+	tokens := make([]models.Token, 0)
+	token := new(models.Token)
+	cursor, err := s.db.Collection("tokens").Aggregate(ctx, query)
+	defer cursor.Close(ctx)
+
+	for cursor.Next(ctx) {
+		err = cursor.Decode(&token)
+		if err != nil {
+			return tokens, err
+		} else {
+
+			tokens = append(tokens, *token)
+		}
+
+	}
+
+	return tokens, err
+
+}
+
 func EnsureIndexes(db *mongo.Database) error {
 	mod := mongo.IndexModel{
 		Keys:    bson.D{{"uid", 1}},

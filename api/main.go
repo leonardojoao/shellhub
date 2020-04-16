@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"time"
 
 	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/kelseyhightower/envconfig"
@@ -19,8 +20,11 @@ import (
 	"github.com/shellhub-io/shellhub/api/pkg/services/deviceadm"
 	"github.com/shellhub-io/shellhub/api/pkg/services/sessionmngr"
 	"github.com/shellhub-io/shellhub/api/pkg/services/ssh2ws"
+	"github.com/shellhub-io/shellhub/api/pkg/services/tokenmngr"
 	"github.com/shellhub-io/shellhub/api/pkg/store/mongo"
 	"github.com/shellhub-io/shellhub/pkg/models"
+	"github.com/speps/go-hashids"
+
 	mgo "go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"golang.org/x/net/websocket"
@@ -389,6 +393,31 @@ func main() {
 		svc := sessionmngr.NewService(store)
 
 		return svc.DeactivateSession(ctx, models.UID(c.Param("uid")))
+	})
+
+	publicAPI.GET("/token/new", func(c echo.Context) error {
+		token := new(models.Token)
+
+		ctx := c.Get("ctx").(context.Context)
+
+		store := mongo.NewStore(ctx.Value("db").(*mgo.Database))
+		svc := tokenmngr.NewService(store)
+
+		fmt.Println("token")
+		hd := hashids.NewData()
+		hd.MinLength = 6
+		hd.Salt = "tenant"
+		hd.Alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890"
+		h, _ := hashids.NewWithData(hd)
+		id, _ := h.Encode([]int{int(time.Now().Unix())})
+		numbers, _ := h.DecodeWithError(id)
+		fmt.Println(id)
+		fmt.Println(numbers)
+		token, err := svc.CreateToken(ctx, *token)
+		if err != nil {
+			return err
+		}
+		return c.JSON(http.StatusOK, token)
 	})
 
 	e.Logger.Fatal(e.Start(":8080"))
