@@ -399,20 +399,21 @@ func main() {
 		token := new(models.Token)
 
 		ctx := c.Get("ctx").(context.Context)
+		tenant := c.Request().Header.Get("X-Tenant-ID")
 
 		store := mongo.NewStore(ctx.Value("db").(*mgo.Database))
 		svc := tokenmngr.NewService(store)
 
-		fmt.Println("token")
 		hd := hashids.NewData()
 		hd.MinLength = 6
-		hd.Salt = "tenant"
+		hd.Salt = tenant
 		hd.Alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890"
 		h, _ := hashids.NewWithData(hd)
-		id, _ := h.Encode([]int{int(time.Now().Unix())})
-		numbers, _ := h.DecodeWithError(id)
-		fmt.Println(id)
-		fmt.Println(numbers)
+		token.CreatedAt = time.Now()
+		id, _ := h.Encode([]int{int(token.CreatedAt.Unix())})
+		token.ID = id
+		token.TenantID = tenant
+
 		token, err := svc.CreateToken(ctx, *token)
 		if err != nil {
 			return err
