@@ -416,7 +416,7 @@ func main() {
 
 		token, err := svc.CreateToken(ctx, *token)
 		if err != nil {
-			return err
+			return c.NoContent(http.StatusInternalServerError)
 		}
 		return c.JSON(http.StatusOK, token)
 	})
@@ -430,7 +430,7 @@ func main() {
 
 		token, err := svc.GetToken(ctx, c.Param("id"))
 		if err != nil {
-			return err
+			return c.NoContent(http.StatusForbidden)
 		}
 		return c.JSON(http.StatusOK, token)
 
