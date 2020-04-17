@@ -421,6 +421,21 @@ func main() {
 		return c.JSON(http.StatusOK, token)
 	})
 
+	publicAPI.GET("/token/:id", func(c echo.Context) error {
+		token := new(models.Token)
+		ctx := c.Get("ctx").(context.Context)
+		store := mongo.NewStore(ctx.Value("db").(*mgo.Database))
+
+		svc := tokenmngr.NewService(store)
+
+		token, err := svc.GetToken(ctx, c.Param("id"))
+		if err != nil {
+			return err
+		}
+		return c.JSON(http.StatusOK, token)
+
+	})
+
 	e.Logger.Fatal(e.Start(":8080"))
 }
 

@@ -9,6 +9,7 @@ import (
 
 type Service interface {
 	CreateToken(ctx context.Context, token models.Token) (*models.Token, error)
+	GetToken(ctx context.Context, id string) (*models.Token, error)
 }
 
 type service struct {
@@ -22,4 +23,8 @@ func NewService(store store.Store) Service {
 func (s *service) CreateToken(ctx context.Context, token models.Token) (*models.Token, error) {
 	return s.store.CreateToken(ctx, token)
 
+}
+
+func (s *service) GetToken(ctx context.Context, id string) (*models.Token, error) {
+	return s.store.GetToken(ctx, id)
 }

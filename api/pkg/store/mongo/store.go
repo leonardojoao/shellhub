@@ -561,7 +561,11 @@ func (s *Store) GetToken(ctx context.Context, id string) (*models.Token, error) 
 	if err := s.db.Collection("tokens").FindOne(ctx, bson.M{"id": id}).Decode(&token); err != nil {
 		return nil, err
 	}
-	return token, nil
+	if token.CreatedAt.Add(time.Hour).Unix() > time.Now().Unix() {
+		return token, nil
+
+	}
+	return nil, nil
 }
 
 func (s *Store) ListTokens(ctx context.Context, perPage int, page int) ([]models.Token, error) {
