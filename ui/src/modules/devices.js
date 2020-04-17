@@ -1,5 +1,5 @@
 import Vue from 'vue'
-import { fetchDevices, removeDevice, renameDevice, getDevice} from '@/api/devices'
+import { fetchDevices, removeDevice, renameDevice, getDevice, tokenDevice} from '@/api/devices'
 
 export default {
     namespaced: true,
@@ -8,12 +8,14 @@ export default {
         devices: [],
         device: [],
         numberDevices: 0,
+        token: ''
     },
 
     getters: {
         list: state => state.devices,
         get: state => state.device,
-        getNumberDevices: state => state.numberDevices
+        getNumberDevices: state => state.numberDevices,
+        token: state => state.token,
     },
 
     mutations: {
@@ -32,6 +34,11 @@ export default {
 
         setDevice: (state, data) => {
             Vue.set(state, 'device', data)
+        },
+
+        tokenDevice: (state, res) => {
+            console.log(res.data.id) // eslint-disable-line no-console
+            Vue.set(state, 'token', res.data.id)
         }
     },
 
@@ -54,6 +61,11 @@ export default {
         get: async (context,uid)  => {
             let res = await getDevice(uid)
             context.commit('setDevice', res.data)
-        }
+        },
+
+        token: async (context) => {
+            let res = await tokenDevice();
+            context.commit('tokenDevice', res)
+        },
     }
 }

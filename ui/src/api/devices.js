@@ -15,4 +15,8 @@ export const
 
     getDevice = async (uid) => {
         return http().get(`/devices/${uid}`)
+    },
+
+    tokenDevice = async () => {
+        return http().get('/token/new')
     }

@@ -40,8 +40,14 @@ export default {
   data() {
     return {
       hostname: window.location.hostname,
-      copySnack: false
+      copySnack: false,
+      token: ''
     };
+  },
+
+  created: async function () {
+    await this.$store.dispatch("devices/token");
+    this.token = this.$store.getters["devices/token"];
   },
 
   computed: {
@@ -61,7 +67,7 @@ export default {
   },
   methods:{
     command() {
-      return `curl "${location.protocol}//${this.hostname}/install.sh?tenant_id=${this.tenant}" | sh`;
+      return `curl "${location.protocol}//${this.hostname}/install.sh?token=${this.token}" | sh`;
     },
 
     copyCommand() {
